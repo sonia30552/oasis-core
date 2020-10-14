@@ -37,7 +37,7 @@ use crate::{
     storage::{
         mkvs::{
             sync::{HostReadSyncer, NoopReadSyncer},
-            OverlayTree, Root, Tree,
+            OverlayTree, Root, RootType, Tree,
         },
         StorageContext,
     },
@@ -406,6 +406,7 @@ impl Dispatcher {
             Root {
                 namespace: header.namespace,
                 version: header.round + 1,
+                root_type: RootType::IO,
                 hash: Hash::empty_hash(),
             },
         );
@@ -514,6 +515,7 @@ impl Dispatcher {
         cache.maybe_replace(Root {
             namespace: block.header.namespace,
             version: block.header.round,
+            root_type: RootType::State,
             hash: block.header.state_root,
         });
 
@@ -590,7 +592,9 @@ impl Dispatcher {
 
                     // Request, dispatch.
                     let ctx = ctx.freeze();
-                    let mut mkvs = Tree::make().new(Box::new(NoopReadSyncer));
+                    let mut mkvs = Tree::make()
+                        .with_root_type(RootType::IO)
+                        .new(Box::new(NoopReadSyncer));
                     let mut overlay = OverlayTree::new(&mut mkvs);
                     let untrusted_local = Arc::new(ProtocolUntrustedLocalStorage::new(
                         Context::create_child(&ctx),
@@ -658,7 +662,9 @@ impl Dispatcher {
 
         // Request, dispatch.
         let ctx = ctx.freeze();
-        let mut mkvs = Tree::make().new(Box::new(NoopReadSyncer));
+        let mut mkvs = Tree::make()
+            .with_root_type(RootType::IO)
+            .new(Box::new(NoopReadSyncer));
         let mut overlay = OverlayTree::new(&mut mkvs);
         let untrusted_local = Arc::new(ProtocolUntrustedLocalStorage::new(
             Context::create_child(&ctx),
