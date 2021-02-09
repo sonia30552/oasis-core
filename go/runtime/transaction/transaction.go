@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/oasisprotocol/oasis-core/go/common/cbor"
+	"github.com/oasisprotocol/oasis-core/go/common/logging"
 	"github.com/oasisprotocol/oasis-core/go/common/crypto/hash"
 	"github.com/oasisprotocol/oasis-core/go/common/keyformat"
 	"github.com/oasisprotocol/oasis-core/go/storage/mkvs"
@@ -378,9 +379,12 @@ func (t *Tree) GetTransactionMultiple(ctx context.Context, txHashes []hash.Hash)
 	for _, txHash := range txHashes {
 		keys = append(keys, txnKeyFmt.Encode(&txHash)) // nolint: gosec
 	}
+	logger := logging.GetLogger("transactions/tree")
+	logger.Info("just before PrefetchPrefixes")
 	if err := t.tree.PrefetchPrefixes(ctx, keys, prefetchArtifactCount); err != nil {
 		return nil, fmt.Errorf("transaction: prefetch failed: %w", err)
 	}
+	logger.Info("just after PrefetchPrefixes")
 
 	// Look up each transaction.
 	result := make(map[hash.Hash]*Transaction)

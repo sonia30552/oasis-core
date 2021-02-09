@@ -457,10 +457,12 @@ func (c *runtimeClient) QueryTxs(ctx context.Context, request *api.QueryTxsReque
 		var blk *block.Block
 		blk, err = c.GetBlock(ctx, &api.GetBlockRequest{RuntimeID: request.RuntimeID, Round: round})
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch block: %w", err)
+			return nil, fmt.Errorf("failed to fetch block %d: %w", round, err)
 		}
 
+		c.logger.Info("pre-getTxnTree")
 		tree := c.getTxnTree(blk)
+		c.logger.Info("post-getTxnTree")
 		defer tree.Close()
 
 		// Extract transaction data for the specified indices.
@@ -470,6 +472,7 @@ func (c *runtimeClient) QueryTxs(ctx context.Context, request *api.QueryTxsReque
 		}
 
 		txes, err := tree.GetTransactionMultiple(ctx, txHashes)
+		c.logger.Info("post-tree.GetTransactionMultiple")
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch transaction data: %w", err)
 		}

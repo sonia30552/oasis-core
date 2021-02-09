@@ -346,11 +346,12 @@ func (q *queries) doSchedulerQueries(ctx context.Context, rng *rand.Rand, height
 	// workers, since those will wait for key-manager committee to be available.
 	// This means that compute/storage nodes will register during epoch 2 and
 	// the committee should be elected from epoch 3 onward.
-	if epoch > 2 {
+	if epoch > 20 {
 		if committees == nil {
 			q.logger.Error("Missing committee for simple-keyvalue runtime",
 				"height", height,
 				"runtime_id", q.runtimeID,
+				"epoch", epoch,
 			)
 			return fmt.Errorf("missing commiteess")
 		}
@@ -723,7 +724,7 @@ func (q *queries) doRuntimeQueries(ctx context.Context, rng *rand.Rand) error {
 	_, err = q.runtime.QueryTxs(ctx, &runtimeClient.QueryTxsRequest{
 		RuntimeID: q.runtimeID,
 		Query: runtimeClient.Query{
-			RoundMin: q.runtimeGenesisRound,
+			RoundMin: 0,//q.runtimeGenesisRound,
 			RoundMax: round,
 		},
 	})

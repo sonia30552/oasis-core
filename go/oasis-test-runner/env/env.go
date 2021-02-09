@@ -12,6 +12,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"runtime/debug"
 
 	flag "github.com/spf13/pflag"
 
@@ -281,6 +282,7 @@ func (m *cmdMonitor) wait() {
 func (m *cmdMonitor) termOrKill() {
 	// Send a SIGTERM and wait a bit first to see if the process will
 	// gracefully terminate.
+	debug.PrintStack()
 	_ = m.cmd.Process.Signal(syscall.SIGTERM)
 	select {
 	case <-time.After(5 * time.Second):
