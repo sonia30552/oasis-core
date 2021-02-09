@@ -133,6 +133,11 @@ func doMigrate(cmd *cobra.Command, args []string) error {
 	}
 
 	for rt := range runtimes {
+		fmt.Printf("looking at runtime %v\n", rt.String())
+		if rt.String() == "0000000000000000000000000000000000000000000000000000000000000002" {
+			fmt.Println("skipping bogus runtime")
+			continue
+		}
 		if pretty {
 			fmt.Printf(" ** Upgrading storage database for runtime %v...\n", rt)
 		}
