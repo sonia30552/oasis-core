@@ -31,13 +31,13 @@ var (
 	storageMigrateCmd = &cobra.Command{
 		Use:   "migrate",
 		Short: "perform node database migration",
-		Run:   doMigrate,
+		RunE:  doMigrate,
 	}
 
 	storageCheckCmd = &cobra.Command{
 		Use:   "check",
 		Short: "check node databases for consistency",
-		Run:   doCheck,
+		RunE:  doCheck,
 	}
 
 	logger = logging.GetLogger("cmd/storage")
@@ -122,14 +122,14 @@ func (mh *migrateHelper) GetRootForHash(root hash.Hash, version uint64) ([]node.
 	return roots, nil
 }
 
-func doMigrate(cmd *cobra.Command, args []string) {
+func doMigrate(cmd *cobra.Command, args []string) error {
 	dataDir := cmdCommon.DataDir()
 	ctx := context.Background()
 
 	runtimes, err := registry.ParseRuntimeMap(viper.GetStringSlice(registry.CfgSupported))
 	if err != nil {
 		logger.Error("unable to enumerate configured runtimes", "err", err)
-		return
+		return fmt.Errorf("unable to enumerate configured runtimes: %w", err)
 	}
 
 	for rt := range runtimes {
@@ -168,19 +168,20 @@ func doMigrate(cmd *cobra.Command, args []string) {
 			if pretty {
 				fmt.Printf("error upgrading runtime %v: %v\n", rt, err)
 			}
-			return
+			return fmt.Errorf("error upgrading runtime %v: %w", rt, err)
 		}
 	}
+	return nil
 }
 
-func doCheck(cmd *cobra.Command, args []string) {
+func doCheck(cmd *cobra.Command, args []string) error {
 	dataDir := cmdCommon.DataDir()
 	ctx := context.Background()
 
 	runtimes, err := registry.ParseRuntimeMap(viper.GetStringSlice(registry.CfgSupported))
 	if err != nil {
 		logger.Error("unable to enumerate configured runtimes", "err", err)
-		return
+		return fmt.Errorf("unable to enumerate configured runtimes: %w", err)
 	}
 
 	for rt := range runtimes {
@@ -209,9 +210,10 @@ func doCheck(cmd *cobra.Command, args []string) {
 			if pretty {
 				fmt.Printf("error checking node database for runtime %v: %v\n", rt, err)
 			}
-			return
+			return fmt.Errorf("error checking node database for runtime %v: %w", rt, err)
 		}
 	}
+	return nil
 }
 
 // Register registers the client sub-command and all of its children.
