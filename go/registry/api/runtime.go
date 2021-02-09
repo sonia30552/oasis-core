@@ -15,6 +15,7 @@ import (
 	"github.com/oasisprotocol/oasis-core/go/common/quantity"
 	"github.com/oasisprotocol/oasis-core/go/common/version"
 	"github.com/oasisprotocol/oasis-core/go/oasis-node/cmd/common/flags"
+	scheduler "github.com/oasisprotocol/oasis-core/go/scheduler/api"
 	staking "github.com/oasisprotocol/oasis-core/go/staking/api"
 	storage "github.com/oasisprotocol/oasis-core/go/storage/api"
 )
@@ -95,9 +96,6 @@ type ExecutorParameters struct {
 	// MaxMessages is the maximum number of messages that can be emitted by the runtime in a
 	// single round.
 	MaxMessages uint32 `json:"max_messages"`
-
-	// MinPoolSize is the minimum required candidate compute node pool size.
-	MinPoolSize uint64 `json:"min_pool_size"`
 }
 
 // ValidateBasic performs basic executor parameter validity checks.
@@ -111,10 +109,6 @@ func (e *ExecutorParameters) ValidateBasic() error {
 
 	if e.RoundTimeout < 5 {
 		return fmt.Errorf("round timeout too small")
-	}
-
-	if e.MinPoolSize < e.GroupSize+e.GroupBackupSize {
-		return fmt.Errorf("minimum pool size too small")
 	}
 
 	return nil
@@ -186,9 +180,6 @@ type StorageParameters struct {
 
 	// CheckpointChunkSize is the chunk size parameter for checkpoint creation.
 	CheckpointChunkSize uint64 `json:"checkpoint_chunk_size"`
-
-	// MinPoolSize is the minimum required candidate storage node pool size.
-	MinPoolSize uint64 `json:"min_pool_size"`
 }
 
 // ValidateBasic performs basic storage parameter validity checks.
@@ -225,10 +216,6 @@ func (s *StorageParameters) ValidateBasic() error {
 		}
 	}
 
-	if s.MinPoolSize < s.GroupSize {
-		return fmt.Errorf("minimum pool size too small")
-	}
-
 	return nil
 }
 
@@ -253,6 +240,30 @@ type EntityWhitelistConfig struct {
 type RuntimeAdmissionPolicy struct {
 	AnyNode         *AnyNodeRuntimeAdmissionPolicy         `json:"any_node,omitempty"`
 	EntityWhitelist *EntityWhitelistRuntimeAdmissionPolicy `json:"entity_whitelist,omitempty"`
+}
+
+// SchedulingConstraints are the node scheduling constraints.
+//
+// Multiple fields may be set in which case the ALL the constraints must be satisfied.
+type SchedulingConstraints struct {
+	ValidatorSet *ValidatorSetConstraint `json:"validator_set,omitempty"`
+	MaxNodes     *MaxNodesConstraint     `json:"max_nodes,omitempty"`
+	MinPoolSize  *MinPoolSizeConstraint  `json:"min_pool_size,omitempty"`
+}
+
+// ValidatorSetConstraint specifies that the entity must have a node that is part of the validator
+// set. No other options can currently be specified.
+type ValidatorSetConstraint struct {
+}
+
+// MaxNodesConstraint specifies that only the given number of nodes may be eligible per entity.
+type MaxNodesConstraint struct {
+	Limit uint16 `json:"limit"`
+}
+
+// MinPoolSizeConstraint is the minimum required candidate pool size constraint.
+type MinPoolSizeConstraint struct {
+	Limit uint16 `json:"limit"`
 }
 
 // RuntimeStakingParameters are the stake-related parameters for a runtime.
@@ -354,6 +365,9 @@ type Runtime struct { // nolint: maligned
 	// AdmissionPolicy sets which nodes are allowed to register for this runtime.
 	// This policy applies to all roles.
 	AdmissionPolicy RuntimeAdmissionPolicy `json:"admission_policy"`
+
+	// Constraints are the node scheduling constraints.
+	Constraints map[scheduler.CommitteeKind]map[scheduler.Role]SchedulingConstraints `json:"constraints,omitempty"`
 
 	// Staking stores the runtime's staking-related parameters.
 	Staking RuntimeStakingParameters `json:"staking,omitempty"`

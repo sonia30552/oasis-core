@@ -12,6 +12,7 @@ import (
 	"github.com/oasisprotocol/oasis-core/go/oasis-test-runner/oasis"
 	"github.com/oasisprotocol/oasis-core/go/oasis-test-runner/scenario"
 	registry "github.com/oasisprotocol/oasis-core/go/registry/api"
+	scheduler "github.com/oasisprotocol/oasis-core/go/scheduler/api"
 )
 
 const (
@@ -90,7 +91,6 @@ func (sc *multipleRuntimesImpl) Fixture() (*oasis.NetworkFixture, error) {
 				GroupSize:       uint64(executorGroupSize),
 				GroupBackupSize: 0,
 				RoundTimeout:    20,
-				MinPoolSize:     uint64(executorGroupSize),
 			},
 			TxnScheduler: registry.TxnSchedulerParameters{
 				Algorithm:         registry.TxnSchedulerSimple,
@@ -104,10 +104,25 @@ func (sc *multipleRuntimesImpl) Fixture() (*oasis.NetworkFixture, error) {
 				MinWriteReplication:     1,
 				MaxApplyWriteLogEntries: 100_000,
 				MaxApplyOps:             2,
-				MinPoolSize:             1,
 			},
 			AdmissionPolicy: registry.RuntimeAdmissionPolicy{
 				AnyNode: &registry.AnyNodeRuntimeAdmissionPolicy{},
+			},
+			Constraints: map[scheduler.CommitteeKind]map[scheduler.Role]registry.SchedulingConstraints{
+				scheduler.KindComputeExecutor: {
+					scheduler.RoleWorker: {
+						MinPoolSize: &registry.MinPoolSizeConstraint{
+							Limit: uint16(executorGroupSize),
+						},
+					},
+				},
+				scheduler.KindStorage: {
+					scheduler.RoleWorker: {
+						MinPoolSize: &registry.MinPoolSizeConstraint{
+							Limit: 1,
+						},
+					},
+				},
 			},
 		}
 

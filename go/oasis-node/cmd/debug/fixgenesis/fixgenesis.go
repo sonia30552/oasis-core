@@ -237,7 +237,6 @@ func convertRuntime(rt *oldRuntime) *registry.Runtime {
 			AllowedStragglers: rt.Executor.AllowedStragglers,
 			RoundTimeout:      rt.Executor.RoundTimeout,
 			MaxMessages:       32,
-			MinPoolSize:       rt.Executor.GroupSize + rt.Executor.GroupBackupSize,
 		},
 		Storage: registry.StorageParameters{
 			GroupSize:               rt.Storage.GroupSize,
@@ -247,7 +246,27 @@ func convertRuntime(rt *oldRuntime) *registry.Runtime {
 			CheckpointInterval:      rt.Storage.CheckpointInterval,
 			CheckpointNumKept:       rt.Storage.CheckpointNumKept,
 			CheckpointChunkSize:     rt.Storage.CheckpointChunkSize,
-			MinPoolSize:             rt.Storage.GroupSize,
+		},
+		Constraints: map[scheduler.CommitteeKind]map[scheduler.Role]registry.SchedulingConstraints{
+			scheduler.KindComputeExecutor: {
+				scheduler.RoleWorker: {
+					MinPoolSize: &registry.MinPoolSizeConstraint{
+						Limit: uint16(rt.Executor.GroupSize),
+					},
+				},
+				scheduler.RoleBackupWorker: {
+					MinPoolSize: &registry.MinPoolSizeConstraint{
+						Limit: uint16(rt.Executor.GroupBackupSize),
+					},
+				},
+			},
+			scheduler.KindStorage: {
+				scheduler.RoleWorker: {
+					MinPoolSize: &registry.MinPoolSizeConstraint{
+						Limit: uint16(rt.Storage.GroupSize),
+					},
+				},
+			},
 		},
 	}
 	crt.Versioned.V = 2
