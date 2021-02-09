@@ -25,7 +25,7 @@ var Oversized = &oversized{
 }
 
 const (
-	oversizedTxGasAmount = 10000
+	oversizedTxGasAmount = 1000
 )
 
 type oversized struct {

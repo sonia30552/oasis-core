@@ -53,7 +53,7 @@ const (
 
 	crashPointProbability = 0.0005
 
-	initialTest = true
+	initialTest = false
 )
 
 // TxSourceMultiShort uses multiple workloads for a short time.
@@ -81,6 +81,7 @@ var TxSourceMultiShort scenario.Scenario = &txSourceImpl{
 	numKeyManagerNodes:                2,
 	numStorageNodes:                   2,
 	numComputeNodes:                   4,
+	seed:                              "e657de3683e209875ccae33a50579fbd",
 }
 
 // TxSourceMultiShortSGX uses multiple workloads for a short time.
@@ -253,6 +254,8 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 		UpgradeMinEpochDiff:       40,
 		UpgradeCancelMinEpochDiff: 20,
 	}
+	nodeBalance := uint64(100_000_000_000)
+	delegationAmount := uint64(1000)
 	f.Network.StakingGenesis = &staking.Genesis{
 		Parameters: staking.ConsensusParameters{
 			CommissionScheduleRules: staking.CommissionScheduleRules{
@@ -275,81 +278,81 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 			FeeSplitWeightVote:        *quantity.NewFromUint64(1),
 			FeeSplitWeightNextPropose: *quantity.NewFromUint64(1),
 		},
-		TotalSupply: *quantity.NewFromUint64(150000000400),
+		TotalSupply: *quantity.NewFromUint64(1500000005000),
 		Ledger: map[staking.Address]*staking.Account{
 			e2e.DeterministicValidator0: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicValidator1: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicValidator2: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicValidator3: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicCompute0: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicCompute1: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicCompute2: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicCompute3: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicCompute4: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicStorage0: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicStorage1: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicStorage2: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicStorage3: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicKeyManager0: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			e2e.DeterministicKeyManager1: {
 				General: staking.GeneralAccount{
-					Balance: *quantity.NewFromUint64(10000000000),
+					Balance: *quantity.NewFromUint64(nodeBalance),
 				},
 			},
 			// Entity accounts need escrow so that validators have voting power
@@ -357,7 +360,7 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 			e2e.DeterministicEntity1: {
 				Escrow: staking.EscrowAccount{
 					Active: staking.SharePool{
-						Balance:     *quantity.NewFromUint64(100),
+						Balance:     *quantity.NewFromUint64(2*delegationAmount),
 						TotalShares: *quantity.NewFromUint64(100),
 					},
 				},
@@ -365,7 +368,7 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 			e2e.DeterministicEntity2: {
 				Escrow: staking.EscrowAccount{
 					Active: staking.SharePool{
-						Balance:     *quantity.NewFromUint64(100),
+						Balance:     *quantity.NewFromUint64(delegationAmount),
 						TotalShares: *quantity.NewFromUint64(100),
 					},
 				},
@@ -373,7 +376,7 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 			e2e.DeterministicEntity3: {
 				Escrow: staking.EscrowAccount{
 					Active: staking.SharePool{
-						Balance:     *quantity.NewFromUint64(100),
+						Balance:     *quantity.NewFromUint64(delegationAmount),
 						TotalShares: *quantity.NewFromUint64(100),
 					},
 				},
@@ -381,7 +384,7 @@ func (sc *txSourceImpl) Fixture() (*oasis.NetworkFixture, error) {
 			e2e.DeterministicEntity4: {
 				Escrow: staking.EscrowAccount{
 					Active: staking.SharePool{
-						Balance:     *quantity.NewFromUint64(100),
+						Balance:     *quantity.NewFromUint64(delegationAmount),
 						TotalShares: *quantity.NewFromUint64(100),
 					},
 				},
@@ -755,7 +758,7 @@ func (sc *txSourceImpl) startWorkload(childEnv *env.Env, errCh chan error, name 
 		"--" + txsource.CfgSeed, sc.seed,
 		"--" + txsource.CfgGasPrice, strconv.FormatUint(txSourceGasPrice, 10),
 		// Use half the configured interval due to fast blocks.
-		//"--" + workload.CfgConsensusNumKeptVersions, strconv.FormatUint(node.Consensus().PruneNumKept/2, 10),
+		"--" + workload.CfgConsensusNumKeptVersions, strconv.FormatUint(node.Consensus().PruneNumKept/2, 10),
 	}
 	for _, ent := range sc.Net.Entities()[1:] {
 		args = append(args, "--"+txsource.CfgValidatorEntity, ent.EntityKeyPath())

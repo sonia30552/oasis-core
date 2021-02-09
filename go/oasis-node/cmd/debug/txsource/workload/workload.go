@@ -21,7 +21,7 @@ import (
 const (
 	maxSubmissionRetryElapsedTime = 120 * time.Second
 
-	fundAccountAmount = 10000000000
+	fundAccountAmount = 10_000_000_000
 )
 
 // ByName is the registry of workloads that you can access with `--workload <name>` on the command line.

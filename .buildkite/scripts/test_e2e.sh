@@ -44,9 +44,9 @@ fi
 set -x
 
 # Run Oasis test runner.
+    #--basedir /tmp/oasis-txsource-multi-short \
+    #--basedir.no_temp_dir \
 ${test_runner_binary} \
-    --basedir /tmp/oasis-txsource-multi-short \
-    --basedir.no_temp_dir \
     --basedir.no_cleanup \
     --e2e.node.binary ${node_binary} \
     --e2e/runtime.client.binary_dir ${WORKDIR}/target/default/debug \
