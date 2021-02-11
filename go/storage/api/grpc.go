@@ -21,11 +21,41 @@ var (
 	ServiceName = cmnGrpc.NewServiceName("Storage")
 
 	// MethodSyncGet is the SyncGet method.
-	MethodSyncGet = ServiceName.NewMethod("SyncGet", GetRequest{})
+	MethodSyncGet = ServiceName.NewMethod("SyncGet", GetRequest{}).
+			WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
+			r, ok := req.(*GetRequest)
+			if !ok {
+				return common.Namespace{}, errInvalidRequestType
+			}
+			return r.Tree.Root.Namespace, nil
+		}).
+		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
+			return true, nil
+		})
 	// MethodSyncGetPrefixes is the SyncGetPrefixes method.
-	MethodSyncGetPrefixes = ServiceName.NewMethod("SyncGetPrefixes", GetPrefixesRequest{})
+	MethodSyncGetPrefixes = ServiceName.NewMethod("SyncGetPrefixes", GetPrefixesRequest{}).
+				WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
+			r, ok := req.(*GetPrefixesRequest)
+			if !ok {
+				return common.Namespace{}, errInvalidRequestType
+			}
+			return r.Tree.Root.Namespace, nil
+		}).
+		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
+			return true, nil
+		})
 	// MethodSyncIterate is the SyncIterate method.
-	MethodSyncIterate = ServiceName.NewMethod("SyncIterate", IterateRequest{})
+	MethodSyncIterate = ServiceName.NewMethod("SyncIterate", IterateRequest{}).
+				WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
+			r, ok := req.(*IterateRequest)
+			if !ok {
+				return common.Namespace{}, errInvalidRequestType
+			}
+			return r.Tree.Root.Namespace, nil
+		}).
+		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
+			return true, nil
+		})
 	// MethodApply is the Apply method.
 	MethodApply = ServiceName.NewMethod("Apply", ApplyRequest{}).
 			WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
@@ -53,43 +83,13 @@ var (
 		})
 
 	// MethodGetDiff is the GetDiff method.
-	MethodGetDiff = ServiceName.NewMethod("GetDiff", GetDiffRequest{}).
-			WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
-			r, ok := req.(*GetDiffRequest)
-			if !ok {
-				return common.Namespace{}, errInvalidRequestType
-			}
-			return r.StartRoot.Namespace, nil
-		}).
-		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
-			return true, nil
-		})
+	MethodGetDiff = ServiceName.NewMethod("GetDiff", GetDiffRequest{})
 
 	// MethodGetCheckpoints is the GetCheckpoints method.
-	MethodGetCheckpoints = ServiceName.NewMethod("GetCheckpoints", checkpoint.GetCheckpointsRequest{}).
-				WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
-			r, ok := req.(*checkpoint.GetCheckpointsRequest)
-			if !ok {
-				return common.Namespace{}, errInvalidRequestType
-			}
-			return r.Namespace, nil
-		}).
-		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
-			return true, nil
-		})
+	MethodGetCheckpoints = ServiceName.NewMethod("GetCheckpoints", checkpoint.GetCheckpointsRequest{})
 
 	// MethodGetCheckpointChunk is the GetCheckpointChunk method.
-	MethodGetCheckpointChunk = ServiceName.NewMethod("GetCheckpointChunk", checkpoint.ChunkMetadata{}).
-					WithNamespaceExtractor(func(ctx context.Context, req interface{}) (common.Namespace, error) {
-			cm, ok := req.(*checkpoint.ChunkMetadata)
-			if !ok {
-				return common.Namespace{}, errInvalidRequestType
-			}
-			return cm.Root.Namespace, nil
-		}).
-		WithAccessControl(func(ctx context.Context, req interface{}) (bool, error) {
-			return true, nil
-		})
+	MethodGetCheckpointChunk = ServiceName.NewMethod("GetCheckpointChunk", checkpoint.ChunkMetadata{})
 
 	// serviceDesc is the gRPC service descriptor.
 	serviceDesc = grpc.ServiceDesc{
