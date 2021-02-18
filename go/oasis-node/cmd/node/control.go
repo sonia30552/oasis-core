@@ -28,9 +28,7 @@ func (n *Node) RequestShutdown() (<-chan struct{}, error) {
 	if n.RegistrationWorker == nil {
 		// In case there is no registration worker, we can just trigger an immediate shutdown.
 		ch := make(chan struct{})
-		go func() {
-			close(ch)
-			n.RegistrationStopped()
+		n.RegistrationStopped()
 		}()
 		return ch, nil
 	}
@@ -67,9 +65,7 @@ func (n *Node) GetRegistrationStatus(ctx context.Context) (*control.Registration
 func (n *Node) GetRuntimeStatus(ctx context.Context) (map[common.Namespace]control.RuntimeStatus, error) {
 	runtimes := make(map[common.Namespace]control.RuntimeStatus)
 
-	// Seed node doesn't have a runtime registry.
-	if n.RuntimeRegistry == nil {
-		return runtimes, nil
+	
 	}
 
 	for _, rt := range n.RuntimeRegistry.Runtimes() {
